@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IAL 普数 / 高数 合分辅助</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --border:#dbe2ea;
+      --primary:#2563eb;
+      --primary-soft:#eff6ff;
+      --good:#065f46;
+      --good-bg:#ecfdf5;
+      --warn:#92400e;
+      --warn-bg:#fffbeb;
+      --bad:#991b1b;
+      --bad-bg:#fef2f2;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.5;
+    }
+    .wrap{
+      max-width:1120px;
+      margin:24px auto;
+      padding:0 16px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:20px;
+      box-shadow:0 4px 20px rgba(15,23,42,.04);
+      margin-bottom:16px;
+    }
+    h1{margin:0 0 8px;font-size:28px}
+    h2{margin:0 0 14px;font-size:20px}
+    p.note{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+    }
+    @media (max-width:800px){
+      .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    .unit{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px;
+      background:#fafafa;
+    }
+    .unit label{
+      display:block;
+      font-weight:700;
+      margin-bottom:8px;
+      font-size:15px;
+    }
+    .unit input{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid #cfd8e3;
+      border-radius:10px;
+      font-size:15px;
+      outline:none;
+      background:#fff;
+    }
+    .unit input:focus{
+      border-color:var(--primary);
+      box-shadow:0 0 0 3px rgba(37,99,235,.12);
+    }
+    .awards{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+    @media (max-width:700px){
+      .awards{grid-template-columns:1fr}
+    }
+    .check{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px 14px;
+      background:#fafafa;
+    }
+    .check input{transform:scale(1.15)}
+    .btns{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+    button{
+      appearance:none;
+      border:none;
+      border-radius:12px;
+      padding:12px 18px;
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .primary{
+      background:var(--primary);
+      color:#fff;
+    }
+    .secondary{
+      background:#eef2f7;
+      color:#111827;
+    }
+    .result-block{
+      border-radius:14px;
+      padding:14px 16px;
+      margin-top:12px;
+      border:1px solid var(--border);
+      background:#fff;
+    }
+    .success{
+      background:var(--good-bg);
+      border-color:#bbf7d0;
+    }
+    .warning{
+      background:var(--warn-bg);
+      border-color:#fde68a;
+    }
+    .error{
+      background:var(--bad-bg);
+      border-color:#fecaca;
+    }
+    .mono{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+    }
+    .small{
+      color:var(--muted);
+      font-size:13px;
+    }
+    .pill{
+      display:inline-block;
+      padding:3px 8px;
+      border-radius:999px;
+      background:var(--primary-soft);
+      color:var(--primary);
+      font-weight:700;
+      font-size:12px;
+      margin-right:6px;
+      margin-bottom:6px;
+    }
+    .grade-big{
+      display:inline-block;
+      font-size:24px;
+      font-weight:800;
+      padding:4px 10px;
+      border-radius:12px;
+      background:#fff;
+      border:1px solid var(--border);
+      margin-left:8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>IAL 普数 / 高数 合分辅助</h1>
+      <p class="note">
+        空着表示未考。程序会自动搜索最优分配。<br>
+        现在支持：AS 普数、AS 高数、AL 普数、AL 高数。<br>
+        <strong>不能同时勾选 AS 与 AL。</strong>
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>1. 输入 14 个单元的 UMS</h2>
+      <div class="grid" id="unitGrid"></div>
+    </div>
+
+    <div class="card">
+      <h2>2. 选择要合分的 award</h2>
+      <div class="awards">
+        <label class="check"><input type="checkbox" id="AS_MATH"> AS Mathematics（AS 普数）</label>
+        <label class="check"><input type="checkbox" id="AS_FM"> AS Further Mathematics（AS 高数）</label>
+        <label class="check"><input type="checkbox" id="AL_MATH"> AL Mathematics（AL 普数）</label>
+        <label class="check"><input type="checkbox" id="AL_FM"> AL Further Mathematics（AL 高数）</label>
+      </div>
+      <div class="btns">
+        <button class="primary" onclick="runCalculator()">计算最优分配</button>
+        <button class="secondary" onclick="clearAllInputs()">清空</button>
+      </div>
+      <p class="note">
+        规则摘要：<br>
+        AS 普数：P1 + P2 + (M1 / S1 / D1)<br>
+        AL 普数：P1 + P2 + P3 + P4 + (S1S2 / M1M2 / S1M1 / S1D1 / M1D1)<br>
+        AS 高数：3 门，必须含 FP1，且不含 P1-P4<br>
+        AL 高数：6 门，必须含 FP1，且 FP2 / FP3 至少一门，且不含 P1-P4
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>3. 结果</h2>
+      <div id="result"></div>
+    </div>
+  </div>
+
+  <script>
+    const UNITS = ["P1","P2","P3","P4","M1","M2","M3","S1","S2","S3","D1","FP1","FP2","FP3"];
+    const END23_UNITS = ["M2","M3","S2","S3","FP2","FP3"];
+
+    const AWARD_LABELS = {
+      AS_MATH: "AS Mathematics",
+      AS_FM: "AS Further Mathematics",
+      AL_MATH: "AL Mathematics",
+      AL_FM: "AL Further Mathematics"
+    };
+
+    const GRADE_VALUE = {
+      "U": 0,
+      "E": 1,
+      "D": 2,
+      "C": 3,
+      "B": 4,
+      "A": 5,
+      "A*": 6
+    };
+
+    function buildInputs() {
+      const grid = document.getElementById("unitGrid");
+      grid.innerHTML = "";
+      for (const unit of UNITS) {
+        const box = document.createElement("div");
+        box.className = "unit";
+        box.innerHTML = `
+          <label for="${unit}">${unit}</label>
+          <input id="${unit}" type="number" min="0" max="100" step="1" placeholder="留空=未考">
+        `;
+        grid.appendChild(box);
+      }
+    }
+    buildInputs();
+
+    function getScores() {
+      const scores = {};
+      for (const unit of UNITS) {
+        const raw = document.getElementById(unit).value.trim();
+        scores[unit] = raw === "" ? null : Number(raw);
+      }
+      return scores;
+    }
+
+    function selectedAwards() {
+      return ["AS_MATH","AS_FM","AL_MATH","AL_FM"].filter(id => document.getElementById(id).checked);
+    }
+
+    function hasAS(awards) {
+      return awards.some(a => a.startsWith("AS_"));
+    }
+
+    function hasAL(awards) {
+      return awards.some(a => a.startsWith("AL_"));
+    }
+
+    function setHTML(id, html) {
+      document.getElementById(id).innerHTML = html;
+    }
+
+    function formatUnitList(arr) {
+      return arr.map(u => `<span class="pill">${u}</span>`).join("");
+    }
+
+    function sumScores(combo, scores) {
+      return combo.reduce((s, u) => s + (scores[u] ?? 0), 0);
+    }
+
+    function isAvailable(combo, scores) {
+      return combo.every(u => scores[u] !== null && !Number.isNaN(scores[u]));
+    }
+
+    function arraysEqualAsSet(a, b) {
+      if (a.length !== b.length) return false;
+      return [...a].sort().join("|") === [...b].sort().join("|");
+    }
+
+    function uniqueCombos(combos) {
+      const out = [];
+      for (const c of combos) {
+        if (!out.some(x => arraysEqualAsSet(x, c))) out.push(c);
+      }
+      return out;
+    }
+
+    function combinations(arr, k) {
+      const result = [];
+      function dfs(start, path) {
+        if (path.length === k) {
+          result.push([...path]);
+          return;
+        }
+        for (let i = start; i < arr.length; i++) {
+          path.push(arr[i]);
+          dfs(i + 1, path);
+          path.pop();
+        }
+      }
+      dfs(0, []);
+      return result;
+    }
+
+    function generateAwardCombos(award) {
+      if (award === "AS_MATH") {
+        return [
+          ["P1","P2","M1"],
+          ["P1","P2","S1"],
+          ["P1","P2","D1"]
+        ];
+      }
+
+      if (award === "AL_MATH") {
+        return [
+          ["P1","P2","P3","P4","S1","S2"],
+          ["P1","P2","P3","P4","M1","M2"],
+          ["P1","P2","P3","P4","S1","M1"],
+          ["P1","P2","P3","P4","S1","D1"],
+          ["P1","P2","P3","P4","M1","D1"]
+        ];
+      }
+
+      if (award === "AS_FM") {
+        const pool = ["M1","M2","M3","S1","S2","S3","D1","FP2","FP3"];
+        return combinations(pool, 2).map(pair => ["FP1", ...pair]);
+      }
+
+      if (award === "AL_FM") {
+        const pool = ["M1","M2","M3","S1","S2","S3","D1","FP2","FP3"];
+        const all = combinations(pool, 5)
+          .filter(set => set.includes("FP2") || set.includes("FP3"))
+          .map(set => ["FP1", ...set]);
+        return uniqueCombos(all);
+      }
+
+      return [];
+    }
+
+    function gradeFromThreshold(total, thresholds) {
+      if (total >= thresholds.A) return "A";
+      if (total >= thresholds.B) return "B";
+      if (total >= thresholds.C) return "C";
+      if (total >= thresholds.D) return "D";
+      if (total >= thresholds.E) return "E";
+      return "U";
+    }
+
+    function best3End23Sum(combo, scores) {
+      const vals = combo
+        .filter(u => END23_UNITS.includes(u))
+        .map(u => scores[u])
+        .filter(v => v !== null && !Number.isNaN(v))
+        .sort((a,b) => b-a);
+
+      if (vals.length < 3) return -Infinity;
+      return vals[0] + vals[1] + vals[2];
+    }
+
+    function evaluateAward(award, combo, scores) {
+      const total = sumScores(combo, scores);
+      let grade = "U";
+      let extra = "";
+      let nextHint = "";
+
+      if (award === "AS_MATH" || award === "AS_FM") {
+        grade = gradeFromThreshold(total, {
+          A: 240, B: 210, C: 180, D: 150, E: 120
+        });
+
+        if (grade === "A") {
+          nextHint = "已到最高等级 A";
+        } else {
+          const nextMap = {U:["E",120],E:["D",150],D:["C",180],C:["B",210],B:["A",240]};
+          const [nextGrade, need] = nextMap[grade];
+          nextHint = `距离 ${nextGrade} 还差 ${need - total} 分`;
+        }
+      }
+
+      if (award === "AL_MATH") {
+        grade = gradeFromThreshold(total, {
+          A: 480, B: 420, C: 360, D: 300, E: 240
+        });
+
+        const p3p4 = scores["P3"] + scores["P4"];
+        if (grade === "A" && total >= 480 && p3p4 >= 180) {
+          grade = "A*";
+          extra = `A* 条件满足：P3+P4 = ${p3p4}`;
+          nextHint = "已到最高等级 A*";
+        } else {
+          extra = `P3+P4 = ${p3p4}`;
+          if (grade === "A") {
+            const totalGap = Math.max(0, 480 - total);
+            const p3p4Gap = Math.max(0, 180 - p3p4);
+            if (totalGap === 0 && p3p4Gap > 0) {
+              nextHint = `距离 A* 还差：P3+P4 条件差 ${p3p4Gap} 分`;
+            } else if (totalGap > 0 && p3p4Gap === 0) {
+              nextHint = `距离 A* 还差：总分差 ${totalGap} 分`;
+            } else if (totalGap > 0 && p3p4Gap > 0) {
+              nextHint = `距离 A* 还差：总分差 ${totalGap} 分，且 P3+P4 条件差 ${p3p4Gap} 分`;
+            } else {
+              nextHint = "已满足 A*";
+            }
+          } else {
+            const nextMap = {U:["E",240],E:["D",300],D:["C",360],C:["B",420],B:["A",480]};
+            const [nextGrade, need] = nextMap[grade];
+            nextHint = `距离 ${nextGrade} 还差 ${need - total} 分`;
+          }
+        }
+      }
+
+      if (award === "AL_FM") {
+        grade = gradeFromThreshold(total, {
+          A: 480, B: 420, C: 360, D: 300, E: 240
+        });
+
+        const end23Sum = best3End23Sum(combo, scores);
+        if (grade === "A" && total >= 480 && end23Sum >= 270) {
+          grade = "A*";
+          extra = `A* 条件满足：最佳 3 门 2/3 结尾单元合计 = ${end23Sum}`;
+          nextHint = "已到最高等级 A*";
+        } else {
+          if (end23Sum === -Infinity) {
+            extra = `A* 条件未满足：可用于 2/3 结尾统计的单元不足 3 门`;
+          } else {
+            extra = `最佳 3 门 2/3 结尾单元合计 = ${end23Sum}`;
+          }
+
+          if (grade === "A") {
+            const totalGap = Math.max(0, 480 - total);
+            const end23Gap = end23Sum === -Infinity ? "至少还需要 3 门可计入单元" : Math.max(0, 270 - end23Sum);
+
+            if (typeof end23Gap === "string") {
+              nextHint = `距离 A* 还差：${end23Gap}`;
+            } else if (totalGap === 0 && end23Gap > 0) {
+              nextHint = `距离 A* 还差：2/3 结尾三门条件差 ${end23Gap} 分`;
+            } else if (totalGap > 0 && end23Gap === 0) {
+              nextHint = `距离 A* 还差：总分差 ${totalGap} 分`;
+            } else if (totalGap > 0 && end23Gap > 0) {
+              nextHint = `距离 A* 还差：总分差 ${totalGap} 分，且 2/3 结尾三门条件差 ${end23Gap} 分`;
+            } else {
+              nextHint = "已满足 A*";
+            }
+          } else {
+            const nextMap = {U:["E",240],E:["D",300],D:["C",360],C:["B",420],B:["A",480]};
+            const [nextGrade, need] = nextMap[grade];
+            nextHint = `距离 ${nextGrade} 还差 ${need - total} 分`;
+          }
+        }
+      }
+
+      return {
+        award,
+        combo,
+        total,
+        grade,
+        gradeValue: GRADE_VALUE[grade],
+        extra,
+        nextHint
+      };
+    }
+
+    function compareSingleEval(a, b) {
+      if (a.gradeValue !== b.gradeValue) return a.gradeValue - b.gradeValue;
+      if (a.total !== b.total) return a.total - b.total;
+      return 0;
+    }
+
+    function compareMultiChoice(choiceA, choiceB, awards) {
+      const mapA = {};
+      const mapB = {};
+      for (const x of choiceA) mapA[x.award] = x;
+      for (const x of choiceB) mapB[x.award] = x;
+
+      const priority = ["AL_MATH","AL_FM","AS_MATH","AS_FM"].filter(a => awards.includes(a));
+
+      for (const award of priority) {
+        const a = mapA[award];
+        const b = mapB[award];
+        if (a.gradeValue !== b.gradeValue) return a.gradeValue - b.gradeValue;
+      }
+
+      const totalA = choiceA.reduce((s,x)=>s+x.total,0);
+      const totalB = choiceB.reduce((s,x)=>s+x.total,0);
+      if (totalA !== totalB) return totalA - totalB;
+
+      for (const award of priority) {
+        const a = mapA[award];
+        const b = mapB[award];
+        if (a.total !== b.total) return a.total - b.total;
+      }
+
+      return 0;
+    }
+
+    function bestComboForSingleAward(award, scores) {
+      const combos = generateAwardCombos(award).filter(c => isAvailable(c, scores));
+      if (!combos.length) return null;
+
+      let best = null;
+      for (const combo of combos) {
+        const evaluated = evaluateAward(award, combo, scores);
+        if (!best || compareSingleEval(evaluated, best) > 0) {
+          best = evaluated;
+        }
+      }
+      return best;
+    }
+
+    function optimizeSelectedAwards(awards, scores) {
+      const allOptions = {};
+
+      for (const award of awards) {
+        allOptions[award] = generateAwardCombos(award)
+          .filter(c => isAvailable(c, scores))
+          .map(c => evaluateAward(award, c, scores));
+      }
+
+      const impossible = awards.filter(a => allOptions[a].length === 0);
+      if (impossible.length) {
+        return {
+          possible: false,
+          impossibleAwards: impossible,
+          allOptions
+        };
+      }
+
+      let bestChoice = null;
+
+      function dfs(index, used, chosen) {
+        if (index === awards.length) {
+          if (!bestChoice || compareMultiChoice(chosen, bestChoice, awards) > 0) {
+            bestChoice = chosen.map(x => ({...x, combo:[...x.combo]}));
+          }
+          return;
+        }
+
+        const award = awards[index];
+        for (const option of allOptions[award]) {
+          if (option.combo.some(u => used.has(u))) continue;
+
+          option.combo.forEach(u => used.add(u));
+          chosen.push(option);
+          dfs(index + 1, used, chosen);
+          chosen.pop();
+          option.combo.forEach(u => used.delete(u));
+        }
+      }
+
+      dfs(0, new Set(), []);
+
+      if (!bestChoice) {
+        return {
+          possible: false,
+          impossibleAwards: [],
+          clashOnly: true,
+          allOptions
+        };
+      }
+
+      return {
+        possible: true,
+        chosen: bestChoice,
+        total: bestChoice.reduce((s,x)=>s+x.total,0)
+      };
+    }
+
+    function renderResult(best, awards, scores) {
+      if (!best.possible) {
+        let html = `<div class="result-block error"><strong>当前无法合出你勾选的全部 award。</strong>`;
+
+        if (best.impossibleAwards && best.impossibleAwards.length) {
+          html += `<div style="margin-top:8px;">以下 award 单独看就无法成立：</div>`;
+          html += `<div style="margin-top:8px;">${best.impossibleAwards.map(a => `<span class="pill">${AWARD_LABELS[a]}</span>`).join("")}</div>`;
+        } else if (best.clashOnly) {
+          html += `<div style="margin-top:8px;">每个 award 单独看都能成立，但放在一起时会因为单元冲突，无法同时成立。</div>`;
+        }
+
+        html += `</div>`;
+
+        const singlePossible = awards.map(a => bestComboForSingleAward(a, scores)).filter(Boolean);
+        if (singlePossible.length) {
+          html += `<div class="result-block warning"><strong>当前可单独合出的 award：</strong>`;
+          for (const item of singlePossible) {
+            html += `<hr style="border:none;border-top:1px solid #f5d98b;margin:12px 0;">`;
+            html += `<div><strong>${AWARD_LABELS[item.award]}</strong> <span class="grade-big">${item.grade}</span></div>`;
+            html += `<div style="margin-top:6px;">单元：${formatUnitList(item.combo)}</div>`;
+            html += `<div style="margin-top:6px;">总分：<span class="mono"><strong>${item.total}</strong></span></div>`;
+            if (item.extra) {
+              html += `<div class="small" style="margin-top:6px;">${item.extra}</div>`;
+            }
+            if (item.nextHint) {
+              html += `<div class="small" style="margin-top:6px;">${item.nextHint}</div>`;
+            }
+          }
+          html += `</div>`;
+        }
+
+        return html;
+      }
+
+      let html = `<div class="result-block success"><strong>可以合出你勾选的全部 award。</strong>`;
+      html += `<div style="margin-top:8px;">当前最优方案按 <strong>最终等级优先</strong> 搜索；若等级相同，再比较总 UMS。</div>`;
+      html += `</div>`;
+
+      for (const item of best.chosen) {
+        html += `<div class="result-block success">`;
+        html += `<div><strong>${AWARD_LABELS[item.award]}</strong> <span class="grade-big">${item.grade}</span></div>`;
+        html += `<div style="margin-top:8px;">使用单元：${formatUnitList(item.combo)}</div>`;
+        html += `<div style="margin-top:8px;">总分：<span class="mono"><strong>${item.total}</strong></span></div>`;
+        if (item.extra) {
+          html += `<div class="small" style="margin-top:6px;">${item.extra}</div>`;
+        }
+        if (item.nextHint) {
+          html += `<div class="small" style="margin-top:6px;">${item.nextHint}</div>`;
+        }
+        html += `</div>`;
+      }
+
+      if (awards.includes("AL_MATH") && awards.includes("AL_FM")) {
+        const math = best.chosen.find(x => x.award === "AL_MATH");
+        const fm = best.chosen.find(x => x.award === "AL_FM");
+        html += `<div class="result-block">`;
+        html += `<div><strong>联合结果摘要</strong></div>`;
+        html += `<div style="margin-top:8px;">AL 普数最终等级：<span class="grade-big">${math.grade}</span></div>`;
+        html += `<div style="margin-top:8px;">AL 高数最终等级：<span class="grade-big">${fm.grade}</span></div>`;
+        html += `</div>`;
+      }
+
+      return html;
+    }
+
+    function runCalculator() {
+      const awards = selectedAwards();
+      const scores = getScores();
+
+      if (!awards.length) {
+        setHTML("result", `<div class="result-block warning">请至少勾选一个 award。</div>`);
+        return;
+      }
+
+      if (hasAS(awards) && hasAL(awards)) {
+        setHTML("result", `<div class="result-block error"><strong>不可以同时选择 AS 与 AL。</strong><br>请只保留 AS award，或者只保留 AL award。</div>`);
+        return;
+      }
+
+      const best = optimizeSelectedAwards(awards, scores);
+      setHTML("result", renderResult(best, awards, scores));
+    }
+
+    function clearAllInputs() {
+      for (const unit of UNITS) {
+        document.getElementById(unit).value = "";
+      }
+      ["AS_MATH","AS_FM","AL_MATH","AL_FM"].forEach(id => {
+        document.getElementById(id).checked = false;
+      });
+      setHTML("result", "");
+    }
+  </script>
+</body>
+</html>
